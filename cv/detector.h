@@ -5,6 +5,8 @@
 #ifndef MSD_FIRE_DETECTOR_H
 #define MSD_FIRE_DETECTOR_H
 
+extern "C" void IRService();
+extern "C" void IRService_vd();
 
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
@@ -32,11 +34,12 @@
 //#include <opencv2/bgsegm.hpp> и
 
 #include "data_exchange/data_exchange.h"
+#include "mlx_90621/mlx90621.h"
 
-#define MAX_FRAME 100000
 
 using namespace cv;
 using namespace std;
+
 
 class fire_object{
 public:
@@ -45,6 +48,7 @@ public:
     bool traking = false;
     Mat frame_object;
     Rect rect_FireData;
+    vector<double> area;
     vector<double> centerX;
     vector<double> centerY;
 };

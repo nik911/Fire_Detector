@@ -3,6 +3,10 @@ project(MSD_fire)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 20)
+# Set the output folder where your program will be created
+set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
 ##########################################################
 find_library(PTHREAD_LIBRARY pthread)
@@ -36,6 +40,9 @@ else()
     #ocv_include_modules_recurse(${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})   прописать пути
 endif()
 ##########################################################
+set(nadjieb_mjpeg_streamer_DIR /home/pi/cpp-mjpeg-streamer-master/build)
+find_package(nadjieb_mjpeg_streamer REQUIRED)
+
 
 # cv
 set(cv_headers cv/cv.h cv/detector.h )
@@ -43,10 +50,13 @@ set(cv_sources cv/cv.cpp cv/detector.cpp)
 # data_exchange
 set(data_exchange_headers data_exchange/data_exchange.h data_exchange/base64.h)
 set(data_exchange_sources data_exchange/data_exchange.cpp data_exchange/base64.cpp)
+# mlx_90621
+set(mlx_90621_headers mlx_90621/bmp.h mlx_90621/bmp.h )
+set(mlx_90621_sources mlx_90621/mlx90621.c mlx_90621/bmp.c)
 
 # project
-set(project_headers ${cv_headers} ${data_exchange_headers})
-set(project_sources main.cpp ${cv_sources} ${data_exchange_sources})
+set(project_headers ${cv_headers} ${data_exchange_headers}  ${mlx_90621_headers})
+set(project_sources main.cpp ${cv_sources} ${data_exchange_sources} ${mlx_90621_sources})
 
 add_executable(MSD_fire main.cpp ${project_sources} ${project_headers})
 
@@ -59,4 +69,5 @@ target_link_libraries(MSD_fire
         ${OpenCV_LIBS}
         ${CURL_LIBRARIES}
         ${LIBS}
-        "${LIBRARIES_FROM_REFERENCES}")
+        "${LIBRARIES_FROM_REFERENCES}"
+        nadjieb_mjpeg_streamer::nadjieb_mjpeg_streamer)

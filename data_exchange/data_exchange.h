@@ -27,6 +27,10 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+
+#include <stdio.h>
+#include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "data_exchange/base64.h"
@@ -82,7 +86,7 @@ public:
     data_exchange();
     void data_packetSend(char *packet);
     void data_packetFile(char *packet);
-    void data_imgSend(int id, char *Pass, char *EventType, char *Data, Mat frame);
+    void data_imgSend(int id, char *Pass, char *EventType, Mat frame);
     void data_textSend(char *packet);
     void data_text();
     ~data_exchange();

@@ -33,6 +33,14 @@
 #include <unistd.h>
 
 
+#include <opencv2/opencv.hpp>
+
+#include <nadjieb/mjpeg_streamer.hpp>
+
+// for convenience
+using MJPEGStreamer = nadjieb::MJPEGStreamer;
+
+
 using namespace cv;
 using namespace std;
 using namespace std::chrono;
@@ -50,8 +58,8 @@ public:
 
 
 struct Test_mode{
-    bool Test_m = true;
-    bool Frame = true;
+    bool Test_m = false;
+    bool Frame = false;
     bool FG_Mask = false;
     bool Canny = false;
 };

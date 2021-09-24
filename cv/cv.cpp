@@ -14,6 +14,20 @@ cv_base::~cv_base() {
 
 void cv_general::cv(General *general)
 {
+    std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 90};
+
+    MJPEGStreamer streamer;
+
+    // By default "/shutdown" is the target to graceful shutdown the streamer
+    // if you want to change the target to graceful shutdown:
+    //      streamer.setShutdownTarget("/stop");
+
+    // By default 1 worker is used for streaming
+    // if you want to use 4 workers:
+    //      streamer.start(8080, 4);
+    streamer.start(8080);
+
+
     check_of_work();
     cv_detection_moving detectionMoving;
     // вычисление задержки на получение кадров
@@ -45,6 +59,14 @@ void cv_general::cv(General *general)
             continue;
         }
 
+        rotate(frame, frame, ROTATE_180);
+
+        // http://localhost:8080/bgr
+        vector<uchar> buff_bgr;
+        imencode(".jpg", frame, buff_bgr, params);
+        streamer.publish("/bgr", std::string(buff_bgr.begin(), buff_bgr.end()));
+
+        /// запускаем cv обработку
         detectionMoving.cv_sign_detector_boat(&frame);
         /// проверка на получение данных
         /// отправка общих данны
@@ -76,7 +98,7 @@ void cv_general::cv(General *general)
             putText(frame, label, Point(0, 35), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 255));
 
             // отображение фрейма
-            if(testMode.Frame)   imshow("Frame", frame);
+            //if(testMode.Frame)   imshow("Frame", frame);
             //if(testMode.FG_Mask) imshow("FG Mask", detect.fgMask);
             //if(testMode.Canny)   imshow("Canny", detect.fgMask_ar);
 
@@ -115,6 +137,7 @@ void cv_general::cv(General *general)
             break;
         }
     }
+    streamer.stop();
     // if (camera_thread.joinable())
     //    camera_thread.join();
 }
@@ -136,7 +159,7 @@ void cv_general::check_of_work() {
     if(settings.isState)
     {
         cam.open(0);
-        namedWindow("Frame", WINDOW_KEEPRATIO);///WINDOW_GUI_NORMAL
+        //namedWindow("Frame", WINDOW_KEEPRATIO);///WINDOW_GUI_NORMAL
         /*std::cout << "Camera:   URL" << endl;
         if(!cam.open(settings.URL))
         {
@@ -157,7 +180,7 @@ void cv_general::check_of_work() {
             std::cout << "Camera Error. No data URL" << endl;
             cam.open(settings.message);
             cam >> frame;
-            imshow("Frame", frame);
+            //imshow("Frame", frame);
             // тут нужно вызвать сигнал на отправку ошибки серверу
             return;
         } else {

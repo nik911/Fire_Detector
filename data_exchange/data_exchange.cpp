@@ -64,7 +64,7 @@ void data_exchange::data_packetFile(char *packet)
     curl_easy_cleanup(curl);
 }
 
-void data_exchange::data_imgSend(int id, char *Pass, char *EventType, char *Data, Mat frame) {
+void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame) {
     /////////////////////////////////////////////////
     //Перекодировка картинки нового корабля в Base64
     ///////////////////////////////////////////////////
@@ -91,10 +91,21 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, char *Data
     //sprintf(buffer, R"({"name":"%s", "object":"%s", "img":":%s"})", name, zona, buf_img);
 
 
-    string data_time = "16.01.2021 9:44:26";
-    char *time_data = const_cast<char *>(data_time.c_str());
+    //string data_time = "16.01.2021 9:44:26";
+    //char *time_data = const_cast<char *>(data_time.c_str());
 
-    sprintf(buffer, R"({"Id":%i, "Pass":"%s", "EventType":"%s", "Date":"%s", "Base64":"%s"})", id, Pass, EventType, time_data, buf_img);
+
+
+    struct timeval tv;
+    struct tm* ptm;
+    char time_string[40];
+    long milliseconds;
+
+    gettimeofday (&tv, NULL);
+    ptm = localtime (&tv.tv_sec);
+    strftime (time_string, sizeof (time_string), "%d.%m.%Y %H:%M:%S", ptm);
+
+    sprintf(buffer, R"({"Id":%i, "Pass":"%s", "EventType":"%s", "Date":"%s", "Base64":"%s"})", id, Pass, EventType, time_string, buf_img);
     //sprintf(buffer, R"({"name":"kek1", "object":"kek2", "img":"kek3"})");
     cout << buffer << endl;
     data_packetSend(buffer);
