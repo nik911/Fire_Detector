@@ -1,5 +1,6 @@
 #include "data_exchange/data_exchange.h"
 
+float data_ir[64];
 
 
 data_exchange::data_exchange()
@@ -105,7 +106,28 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame)
     ptm = localtime (&tv.tv_sec);
     strftime (time_string, sizeof (time_string), "%d.%m.%Y %H:%M:%S", ptm);
 
-    sprintf(buffer, R"({"Id":%i, "Pass":"%s", "EventType":"%s", "Date":"%s", "Base64":"%s"})", id, Pass, EventType, time_string, buf_img);
+    /// Это пиздец
+    for(int i=0; i<64; i++) {
+        fprintf(stderr, "%.1f  ", data_ir[i]);
+    }
+
+    ostringstream ss;
+    for(int i = 0; i < 64; i++){
+        ss << data_ir[i] << " ";
+    }
+    string data_ir_string(ss.str());
+
+    char *data_ir_char = const_cast<char *>(data_ir_string.c_str());
+
+    /*char *data_ir_char[64];
+    for(int i=0; i<64; i++) {
+        //fprintf(stderr, "%.1f  ", data_ir[i]);
+        sprintf(data_ir_char[i],"%.1f ", data_ir[i]);
+    }*/
+
+
+    sprintf(buffer, R"({"Id":%i, "Pass":"%s", "EventType":"%s", "Date":"%s", "Base64":"%s", "data_if":"%s"})", id, Pass, EventType, time_string, buf_img, data_ir_char);
+    //sprintf(buffer, R"({"Id":%i, "Pass":"%s", "EventType":"%s", "Date":"%s", "Base64":"%s" })", id, Pass, EventType, time_string, buf_img);
     //sprintf(buffer, R"({"name":"kek1", "object":"kek2", "img":"kek3"})");
     cout << buffer << endl;
     data_packetSend(buffer);

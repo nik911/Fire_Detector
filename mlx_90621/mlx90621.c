@@ -2,6 +2,9 @@
 
 #define DEBUG 0
 
+float data_ir[64];
+
+
 void readEEPROM(int fd, char* bytes);
 void readConfig(int fd,  uint16_t* reg);
 void readTrimOSC(int fd, char* byte);
@@ -178,6 +181,12 @@ void IRService_vd() {
         rows_counter++;
     }
 
+    float* ir_packet = (float*) malloc(sizeof(float)*rows_count*columns_count);
+    if (ir_packet == NULL) {
+        if (DEBUG) fprintf(stderr, "Cannot allocate more memory.\n");
+        goto error;
+    }
+
     float Tmin = 0.0;
     float Tmax = 0.0;
 
@@ -215,15 +224,60 @@ void IRService_vd() {
             float Tambient = 0.0;
 
             Tambient = calculateTA(EEPROM_bytes, EEPROM_config, ptat);
-            if (DEBUG) fprintf (stderr, "Ambient temperature: %.1f\n", Tambient);
+            //if (DEBUG) fprintf (stderr, "Ambient temperature: %.1f\n", Tambient);
 
             int term_max = 10;
             loop = calculatePixTemp(EEPROM_bytes, EEPROM_config, cpix, Tambient, ir_matrix, temperatures, rows_count, columns_count, &Tmin, &Tmax, term_max);
 
-            if(DEBUG) generateFields(temperatures ,4, 16, 45, 45, 5);
+            //fprintf(stderr, "size temp_pointer%d\n", sizeof(temp_pointer));
+
+
+            //
+            //if(DEBUG) generateFields(temperatures ,4, 16, 45, 45, 5);
         }
+
         usleep(50000);
     }
+
+    uint32_t  	ir_data_length;
+    uint8_t*	ir_data;
+
+    float* temp_ir_packet_pointer = ir_packet;
+    int k = 0;
+    for(int i=0; i<rows_count; i++) {
+        for(int j=0; j<columns_count; j++) {
+            *((temp_ir_packet_pointer)+k) = temperatures[i][j];
+            k++;
+        }
+    }
+
+    ir_data_length = sizeof(float)*rows_count*columns_count;
+    ir_data = (unsigned char*)ir_packet;
+
+    int packet_size = 0;
+    packet_size += sizeof(ir_data_length);
+    packet_size += ir_data_length;
+
+    // alloc
+    unsigned char* udp_packet = (unsigned char*) calloc(packet_size, sizeof(unsigned char));
+    // fill
+    int length = 0;
+    unsigned char* temp_pointer = udp_packet;
+
+    ///float data_ir[64];
+    memcpy (temp_pointer, ir_data, ir_data_length);
+    for(int i=0; i<64; i++) {
+        //fprintf(stderr, "%.1f  ", (((float*)(uint32_t)temp_pointer))[i] );
+        data_ir[i] = (((float*)(uint32_t)temp_pointer))[i];
+    }
+
+   /* for(int i=0; i<64; i++) {
+        fprintf(stderr, "%.1f  ", data_ir[i]);
+    }*/
+
+
+
+    if(udp_packet) free(udp_packet);
 
     error:
     close(fd);

@@ -1,5 +1,7 @@
 #include "cv/detector.h"
 
+//float data_ir[64];
+
 cv_detection_moving::cv_detection_moving()
 {
     /// настроки детектора
@@ -315,7 +317,7 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
             bool event = false;
             /// Удалятор
             for (unsigned int s = 0; s < tracking_fire.size(); s++) {
-                if(tracking_fire[s].counter_time > 3)
+                if(tracking_fire[s].counter_time > 5)
                 {
                     //cerr << "tyt3" << endl;
                     tracking_fire.erase(tracking_fire.begin() + s);  // удаление объекта
@@ -402,11 +404,21 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
 
             /// Получение данных от температурной маски
             IRService_vd();
-            usleep(5000);
-            Mat event_ir = imread("temperatures.bmp", IMREAD_ANYDEPTH&IMREAD_ANYDEPTH);
-            //Mat event_ir = imread("temperatures.bmp", 0);
-            //Mat event_ir = imread("kek.jpeg");
+
+
+
+
+            ///usleep(5000);
+            //Mat event_ir = imread("temperatures.bmp", IMREAD_ANYDEPTH&IMREAD_ANYDEPTH);
+            //Mat event_ir = imread("temperatures.bmp", );
+            ///Mat event_ir = imread("kek.jpeg");
             //resize(event_ir,event_ir,Size(200,200), 0, 0, INTER_AREA);
+
+
+            /*for(int i=0; i<64; i++) {
+                fprintf(stderr, "%.1f  ", data_ir[i]);
+            }*/
+/*
             for(unsigned int y=0;y < event_ir.rows;y++)
             {
                 for(unsigned int x=0;x < event_ir.cols;x++)
@@ -419,8 +431,8 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
                         frame_out.at<Vec3b>(y,x)[2] = event_ir.at<Vec3b>(y,x)[2];
                     }
                 }
-            }
-            imshow("Event", frame_out);
+            }*/
+            //imshow("Event", frame_out);
 
             /// Отправляем постоянно через промежуток времени
             index_contours.clear();

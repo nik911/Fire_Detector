@@ -24,14 +24,18 @@
 #include <curl/curl.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
+
+
+#include <mlx_90621/mlx90621.h>
+
 
 #include "data_exchange/base64.h"
 

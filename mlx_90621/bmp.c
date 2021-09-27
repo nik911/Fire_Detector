@@ -144,7 +144,7 @@ void generateBMP() {
 	    }
 	}
 
-	save_bitmap("black_border.bmp", columns_count, rows_count, dpi, pixels);
+	//save_bitmap("black_border.bmp", columns_count, rows_count, dpi, pixels);
 
   rows_counter = rows_count;
   while (rows_counter--) {
