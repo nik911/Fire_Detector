@@ -118,7 +118,7 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
             }
         }
     }
-    imshow("COLOR1", frame_in);
+    //imshow("COLOR1", frame_in);
     //inRange(frame_in, Scalar(255, 0, 0), Scalar(255, 255, 255), frame_in); /// 60
     //imshow("COLOR2", frame_in);
     blur(frame_in, frame_in, cv::Size(15, 15),  cv::Point(-1, -1));//7 добавим немного размытия чтобы убрать мелкий дребезг
@@ -381,6 +381,9 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
                 cout << "event!!!" << endl;
                 int id = 1;
 
+
+                /// Получение данных от температурной маски
+                IRService_vd();
                 /*std::time_t t = std::time(NULL);   // get time now
                 std::tm* now = std::localtime(&t);
                 ostringstream oss;
@@ -399,13 +402,8 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
                 //char *data_time = const_cast<char *>(buf_time.c_str());
                 //char *Data = const_cast<char *>(it1->name_detection_zone.c_str());
                 exchange.data_imgSend(id, Pass, EventType, frame_out);
-                //imshow("Event", frame_out);
+                imshow("Event", frame_out);
             }
-
-            /// Получение данных от температурной маски
-            IRService_vd();
-
-
 
 
             ///usleep(5000);
