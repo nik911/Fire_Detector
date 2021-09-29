@@ -16,7 +16,7 @@ void cv_general::cv(General *general)
 {
     std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 90};
 
-    MJPEGStreamer streamer;
+    //MJPEGStreamer streamer;
 
     // By default "/shutdown" is the target to graceful shutdown the streamer
     // if you want to change the target to graceful shutdown:
@@ -25,7 +25,7 @@ void cv_general::cv(General *general)
     // By default 1 worker is used for streaming
     // if you want to use 4 workers:
     //      streamer.start(8080, 4);
-    streamer.start(8080);
+    //streamer.start(8080);
 
 
     check_of_work();
@@ -39,9 +39,13 @@ void cv_general::cv(General *general)
         cerr << "ERROR! получен пустой кадр \n";
     }
 
-    // Наркатический припадок
+    /// Наркатический припадок
     vector<Rect> boxes_cv;
     vector<int> indices_cv;
+
+    /// Поток на медиа сервер
+    auto *media_server_general = new General_media_server;
+    thread thread_1(media_server_img, ref(media_server_general));
 
     int coint_no_frame = 0; /// счётчик пропущенных кадров
     while(!stop_flag_0)
@@ -61,10 +65,20 @@ void cv_general::cv(General *general)
 
         rotate(frame, frame, ROTATE_180);
 
+
+        media_server_general->media_server_mutex.lock_shared();
+        if(!media_server_general->status_data) {
+            cv::imencode(".jpg", frame, media_server_general->buff_bgr, params);
+            //media_server_general->buff_bgr = gui.frame_roi.clone();
+            media_server_general->status_data = true;
+        }
+        media_server_general->media_server_mutex.unlock();  ///// была хуйня
+
+
         // http://localhost:8080/bgr
-        vector<uchar> buff_bgr;
+      /*  vector<uchar> buff_bgr;
         imencode(".jpg", frame, buff_bgr, params);
-        streamer.publish("/bgr", std::string(buff_bgr.begin(), buff_bgr.end()));
+        streamer.publish("/bgr", std::string(buff_bgr.begin(), buff_bgr.end()));*/
 
         /// запускаем cv обработку
         detectionMoving.cv_sign_detector_boat(&frame);
@@ -93,9 +107,10 @@ void cv_general::cv(General *general)
             alltimes += duration;
             count +=1;
             string label = format("Inference time for a frame : %.2f ms",duration/1000);
-            putText(frame, label, Point(0, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 255));
+            //putText(frame, label, Point(0, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 255));
             label = format("FPS for a frame : %.2f fps", 1000/(duration/1000.0));
-            putText(frame, label, Point(0, 35), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 255));
+            cout << label << endl;
+            //putText(frame, label, Point(0, 35), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 255));
 
             // отображение фрейма
             //if(testMode.Frame)   imshow("Frame", frame);
@@ -137,7 +152,8 @@ void cv_general::cv(General *general)
             break;
         }
     }
-    streamer.stop();
+    thread_1.join();
+    //streamer.stop();
     // if (camera_thread.joinable())
     //    camera_thread.join();
 }
@@ -202,3 +218,6 @@ void cv_general::check_of_work() {
 }
 
 
+void media_server_img(General_media_server *general_media_server){
+    media_server m_server(general_media_server);
+}

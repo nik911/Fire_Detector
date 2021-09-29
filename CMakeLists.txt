@@ -48,8 +48,8 @@ find_package(nadjieb_mjpeg_streamer REQUIRED)
 set(cv_headers cv/cv.h cv/detector.h )
 set(cv_sources cv/cv.cpp cv/detector.cpp)
 # data_exchange
-set(data_exchange_headers data_exchange/data_exchange.h data_exchange/base64.h)
-set(data_exchange_sources data_exchange/data_exchange.cpp data_exchange/base64.cpp)
+set(data_exchange_headers data_exchange/data_exchange.h data_exchange/base64.h data_exchange/media_server.h)
+set(data_exchange_sources data_exchange/data_exchange.cpp data_exchange/base64.cpp data_exchange/media_server.cpp)
 # mlx_90621
 set(mlx_90621_headers mlx_90621/bmp.h mlx_90621/bmp.h )
 set(mlx_90621_sources mlx_90621/mlx90621.c mlx_90621/bmp.c)

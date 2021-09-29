@@ -33,6 +33,8 @@ void data_exchange::data_packetSend(char *packet)
     curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 50L);
     curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
     curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+    curl_easy_setopt(hnd, CURLOPT_TCP_KEEPIDLE, 60L);/// Время ожидания 120 сек
+    curl_easy_setopt(hnd, CURLOPT_TCP_KEEPINTVL, 30L);/// Проверка активности 60 сек
 
     curl_easy_perform(hnd);
 
@@ -126,7 +128,7 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame)
     }*/
 
 
-    sprintf(buffer, R"({"Id":%i, "Pass":"%s", "EventType":"%s", "Date":"%s", "Base64":"%s", "data_if":"%s"})", id, Pass, EventType, time_string, buf_img, data_ir_char);
+    sprintf(buffer, R"({"Id":%i, "Pass":"%s", "EventType":"%s", "Date":"%s", "Base64":"%s", "data_ir":"%s"})", id, Pass, EventType, time_string, buf_img, data_ir_char);
     //sprintf(buffer, R"({"Id":%i, "Pass":"%s", "EventType":"%s", "Date":"%s", "Base64":"%s" })", id, Pass, EventType, time_string, buf_img);
     //sprintf(buffer, R"({"name":"kek1", "object":"kek2", "img":"kek3"})");
     cout << buffer << endl;

@@ -56,7 +56,7 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
                     frame_in.at<Vec3b>(y,x)[1] = 0;
                     frame_in.at<Vec3b>(y,x)[2] = 0;
                 }
-                if(frame_in.at<Vec3b>(y,x)[0]<200){
+                if(frame_in.at<Vec3b>(y,x)[0]>200){
                     frame_in.at<Vec3b>(y,x)[0] = 0;
                     frame_in.at<Vec3b>(y,x)[1] = 0;
                     frame_in.at<Vec3b>(y,x)[2] = 0;
@@ -98,6 +98,11 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
                         frame_in.at<Vec3b>(y,x)[1] = 0;
                         frame_in.at<Vec3b>(y,x)[2] = 0;
                     }
+                    if(frame_in.at<Vec3b>(y,x)[1]>frame_in.at<Vec3b>(y,x)[2]){
+                        frame_in.at<Vec3b>(y,x)[0] = 0;
+                        frame_in.at<Vec3b>(y,x)[1] = 0;
+                        frame_in.at<Vec3b>(y,x)[2] = 0;
+                    }
                 }
             }else{
                 if((frame_in.at<Vec3b>(y,x)[0])>(frame_in.at<Vec3b>(y,x)[1])){
@@ -121,7 +126,7 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
     //imshow("COLOR1", frame_in);
     //inRange(frame_in, Scalar(255, 0, 0), Scalar(255, 255, 255), frame_in); /// 60
     //imshow("COLOR2", frame_in);
-    blur(frame_in, frame_in, cv::Size(15, 15),  cv::Point(-1, -1));//7 добавим немного размытия чтобы убрать мелкий дребезг
+    blur(frame_in, frame_in, cv::Size(20, 20),  cv::Point(-1, -1));//7 добавим немного размытия чтобы убрать мелкий дребезг
     pBackSub->apply(frame_in, fgMask);
 
     //imshow("FG Mask", fgMask);
@@ -149,7 +154,7 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
         State_img = true;*/
 
         /// отделяем цвет сигнатуры движения
-        //inRange(fgMask, Scalar(60, 60, 60), Scalar(255, 255, 255), fgMask);
+        inRange(fgMask, Scalar(60, 60, 60), Scalar(255, 255, 255), fgMask);
         //imshow("InRange", fgMask);
         /// применение алгоритма детектирования границ Кэнни
         ///threshold(fgMask, fgMask, 60, 255, THRESH_OTSU);
@@ -164,7 +169,7 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
         for (size_t i = 0; i < contours_prev.size(); i++)  // выполняем перебор каждого контура
         {
             double area = contourArea(contours_prev[i]);  //присваиваем вес контура
-            if (100 < settings_sign.min_area < 10000) { //&& (area < settings_sign.max_area)
+            if (800 < settings_sign.min_area < 10000) { //&& (area < settings_sign.max_area)
                 contours_curr.push_back(contours_prev[i]);
                 contours_detects.push_back(i);             // находим сответствующие контуры
                 bounding_rect = boundingRect(contours_prev[i]);
@@ -325,7 +330,7 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
             }
             /// Рисуем и Отправляем
             for (unsigned int s = 0; s < tracking_fire.size(); s++) {
-                if(tracking_fire[s].counter > 30)
+                if(tracking_fire[s].counter > 60)
                 {
                     //event = true;
                     cerr << "tyt4" << endl;
@@ -338,19 +343,19 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
                     nom = tracking_fire[s].area[0];
                     for (auto& n : tracking_fire[s].area){
                         summ_area += n;
-                        if(kek = false){
-                            kek;
+                        if(!kek){
+                            kek = true;
                             nom_v.push_back(abs(nom+n));
                         }else{
                             !kek;
                             nom_v.push_back(abs(nom-n));
                         }
                     }
-                    double sum_med = summ_area/30;
+                    double sum_med = summ_area/60;
                     for (auto& n : nom_v){
                         summ_area += n;
                     }
-                    double sum_med_sk = summ_area/30;
+                    double sum_med_sk = summ_area/60;
                     int count_z = 0;
 
                     bool b = false;
@@ -366,7 +371,7 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
                     }
                     count_z = count_z/2;
                     cerr << "2PI: ----" << count_z << endl;
-                    if ((count_z <= 10) && (count_z > 2)){
+                    if ((count_z <= 30) && (count_z > 4)){
                         event = true;
                     }
                     putText(frame_out, "FIRE!", Point(tracking_fire[s].rect_FireData.x, tracking_fire[s].rect_FireData.y),

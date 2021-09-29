@@ -20,6 +20,8 @@
 
 #include "detector.h"
 #include "data_exchange/data_exchange.h"
+#include "data_exchange/media_server.h"
+
 
 #include <thread> // для работы с потоками
 #include <mutex>
@@ -65,7 +67,7 @@ struct Test_mode{
 };
 
 struct General;     /// объеквление структуры чтобы она не потерялась
-struct DNN_general; /// объявление структуры DNN
+//struct DNN_general; /// объявление структуры DNN
 struct General_media_server; /// объявление структуры DNN
 
 
@@ -97,5 +99,8 @@ public:
 
     ~cv_general();                    /// удаление не удачного подключения
 };
+
+
+void media_server_img(General_media_server *general_media_server);
 
 #endif //MSD_FIRE_CV_H
