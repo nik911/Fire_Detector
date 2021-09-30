@@ -36,7 +36,6 @@ extern "C" void IRService_vd();
 #include "data_exchange/data_exchange.h"
 #include "mlx_90621/mlx90621.h"
 
-
 using namespace cv;
 using namespace std;
 

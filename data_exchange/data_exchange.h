@@ -81,10 +81,10 @@ class data_exchange
 
 {
 private:
-    char URL_event[100] = "http://192.168.250.81:90/DataRecipient/GetStringDate";      /// информация по судну
+    char URL_event[100] = "http://192.168.88.254:90/DataRecipient/GetStringDate";      /// информация по судну
     //char URL_event[100] = "http://192.168.250.81:90/DataRecipient/GetStringDate";
     //char URL_event[100] = "http://192.168.250.119:8000/";
-    char URL_massege[100] = "http://192.168.250.225:8080/";
+    char URL_massege[100] = "http://192.168.250.225:8000/";
     //char URL_event[100] = "http://192.168.250.183:8080/api/boats";      /// информация по судну
     //char URL_massege[100] = "http://192.168.250.183:8080//api/boats";
 public:

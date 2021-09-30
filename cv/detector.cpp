@@ -1,6 +1,8 @@
 #include "cv/detector.h"
 
 //float data_ir[64];
+//int event_ir1;
+
 
 cv_detection_moving::cv_detection_moving()
 {
@@ -31,6 +33,7 @@ cv_detection_moving::~cv_detection_moving()
 
 void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
 {
+    event_ir1 = 0;
     contours_detects.clear(); // очищаем старые контуры
     frame_in = *frame;
     /// обновляем фоновую модель
@@ -371,7 +374,7 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
                     }
                     count_z = count_z/2;
                     cerr << "2PI: ----" << count_z << endl;
-                    if ((count_z <= 30) && (count_z > 4)){
+                    if ((count_z <= 30) && (count_z >= 4)){
                         event = true;
                     }
                     putText(frame_out, "FIRE!", Point(tracking_fire[s].rect_FireData.x, tracking_fire[s].rect_FireData.y),
@@ -380,6 +383,11 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
                     tracking_fire.erase(tracking_fire.begin() + s);  // удаление объекта
                 }
             }
+            IRService();
+            if (event_ir1 == 1){
+                event = true;
+            }
+
             if(event){
                 //cout << tracking_fire.size() << endl;
                 event = false;
@@ -412,10 +420,10 @@ void cv_detection_moving::cv_sign_detector_boat(Mat *frame)
 
 
             ///usleep(5000);
-            //Mat event_ir = imread("temperatures.bmp", IMREAD_ANYDEPTH&IMREAD_ANYDEPTH);
-            //Mat event_ir = imread("temperatures.bmp", );
+            ///Mat event_ir = imread("temperatures.bmp", IMREAD_ANYDEPTH&IMREAD_ANYDEPTH);
+            ///Mat event_ir = imread("temperatures.bmp", );
             ///Mat event_ir = imread("kek.jpeg");
-            //resize(event_ir,event_ir,Size(200,200), 0, 0, INTER_AREA);
+            ///resize(event_ir,event_ir,Size(200,200), 0, 0, INTER_AREA);
 
 
             /*for(int i=0; i<64; i++) {

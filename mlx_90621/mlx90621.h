@@ -76,6 +76,8 @@ typedef union {
 #define T_MAX_LEVEL			150
 
 extern float data_ir[64];
+extern float data_ir1[64];
+extern int event_ir1;
 
 void IRService();
 void IRService_vd();

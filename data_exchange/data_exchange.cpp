@@ -1,7 +1,8 @@
 #include "data_exchange/data_exchange.h"
 
 float data_ir[64];
-
+float data_ir1[64];
+//int event_ir1;
 
 data_exchange::data_exchange()
 {
@@ -114,9 +115,16 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame)
     }
 
     ostringstream ss;
-    for(int i = 0; i < 64; i++){
-        ss << data_ir[i] << " ";
+    if(event_ir1 == 0){
+        for(int i = 0; i < 64; i++){
+            ss << data_ir[i] << " ";
+        }
+    }else if(event_ir1 == 1){
+        for(int i = 0; i < 64; i++){
+            ss << data_ir1[i] << " ";
+        }
     }
+    event_ir1 = 0;
     string data_ir_string(ss.str());
 
     char *data_ir_char = const_cast<char *>(data_ir_string.c_str());
@@ -133,6 +141,7 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame)
     //sprintf(buffer, R"({"name":"kek1", "object":"kek2", "img":"kek3"})");
     cout << buffer << endl;
     data_packetSend(buffer);
+
     //cout << buffer << endl;
 }
 
