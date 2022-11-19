@@ -2,30 +2,7 @@
 
 #define DEBUG 0
 
-float data_ir[64];
-float data_ir1[64];
-int event_ir1;
-
-
-void readEEPROM(int fd, char* bytes);
-void readConfig(int fd,  uint16_t* reg);
-void readTrimOSC(int fd, char* byte);
-
-void writeConfig(int fd);
-void writeTrimOSC(int fd, char level);
-
-void readPTAT(int fd, uint16_t* ptat);
-void readCPIX(int fd, int16_t* cpix);
-void readIR(int fd, int16_t** ir_matrix, int rows_count, int columns_count);
-
-//calc
-float calculateTA(char* eepromData, MLX90621_CONFIG_REG config, uint16_t ptat);
-int calculatePixTemp(char* eepromData, MLX90621_CONFIG_REG config, uint16_t cpix, float Tambient, int16_t** ir_matrix, float** temperatures, int rows_count, int columns_count, float* Tmin, float* Tmax, int term_max);
-
-void drawbmp (char * filename);
-
 void IRService() {
-
     char EEPROM_bytes[256] = {0x00};
     MLX90621_CONFIG_REG EEPROM_config;
     char EEPROM_trim;
@@ -102,37 +79,26 @@ void IRService() {
     generateBMP();
     generateGradient();
 
-    //while (loop) {
-        readConfig(fd, &EEPROM_config.VALUE);
-        if (EEPROM_config.POR_MD == 0) {
-            if (DEBUG) fprintf(stderr, "POR\n");
-            //break;
-        }else{
-            if (EEPROM_config.IR_FLAG_RUN) {
-                if (DEBUG) fprintf(stderr, "IR_FLAG_RUN\n");
-                readPTAT(fd, &ptat);
-                readCPIX(fd, &cpix);
-                readIR(fd, ir_matrix, rows_count, columns_count);
+    readConfig(fd, &EEPROM_config.VALUE);
+    if (EEPROM_config.POR_MD == 0) {
+        if (DEBUG) fprintf(stderr, "POR\n");
+        //break;
+    }else{
+        if (EEPROM_config.IR_FLAG_RUN) {
+            if (DEBUG) fprintf(stderr, "IR_FLAG_RUN\n");
+            readPTAT(fd, &ptat);
+            readCPIX(fd, &cpix);
+            readIR(fd, ir_matrix, rows_count, columns_count);
 
-                float Tambient = 0.0;
+            float Tambient = 0.0;
 
-                Tambient = calculateTA(EEPROM_bytes, EEPROM_config, ptat);
-                //if (DEBUG) fprintf (stderr, "Ambient temperature: %.1f\n", Tambient);
+            Tambient = calculateTA(EEPROM_bytes, EEPROM_config, ptat);
 
-                int term_max = 60;
-                loop = calculatePixTemp(EEPROM_bytes, EEPROM_config, cpix, Tambient, ir_matrix, temperatures, rows_count, columns_count, &Tmin, &Tmax, term_max);
-
-                //fprintf(stderr, "size temp_pointer%d\n", sizeof(temp_pointer));
-
-
-                //
-                //if(DEBUG) generateFields(temperatures ,4, 16, 45, 45, 5);
-            }
+            int term_max = 60;
+            loop = calculatePixTemp(EEPROM_bytes, EEPROM_config, cpix, Tambient, ir_matrix, temperatures, rows_count, columns_count, &Tmin, &Tmax, term_max);
         }
-
-
-        usleep(5000);
-    //}
+    }
+    usleep(5000);
 
     uint32_t  	ir_data_length;
     uint8_t*	ir_data;
@@ -145,11 +111,14 @@ void IRService() {
             k++;
         }
     }
+    /// Преобразование картинки
 
     ir_data_length = sizeof(float)*rows_count*columns_count;
     ir_data = (unsigned char*)ir_packet;
 
-    int packet_size = 0;
+    printf("%s", ir_data);
+
+    uint32_t packet_size = 0;
     packet_size += sizeof(ir_data_length);
     packet_size += ir_data_length;
 
@@ -159,18 +128,16 @@ void IRService() {
     int length = 0;
     unsigned char* temp_pointer = udp_packet;
 
-    ///float data_ir[64];
     memcpy (temp_pointer, ir_data, ir_data_length);
     for(int i=0; i<64; i++) {
         //fprintf(stderr, "%.1f  ", (((float*)(uint32_t)temp_pointer))[i] );
-        data_ir1[i] = (((float*)(uint32_t)temp_pointer))[i];
+        //data_ir1[i] = (((float*)(uint32_t)temp_pointer))[i];
+        data_ir1[i] = ((float*)temp_ir_packet_pointer)[i];
     }
 
-    /* for(int i=0; i<64; i++) {
-         fprintf(stderr, "%.1f  ", data_ir[i]);
-     }*/
-
-
+    /*for(int i=0; i<64; i++) {
+        fprintf(stderr, "%.1f  ", data_ir[i]);
+    }*/
 
     if(udp_packet) free(udp_packet);
 
@@ -184,8 +151,6 @@ void IRService() {
     if (ir_matrix) free(ir_matrix);
     if (temperatures) free(temperatures);
 }
-
-
 
 void IRService_vd() {
 
@@ -287,8 +252,6 @@ void IRService_vd() {
 
             //fprintf(stderr, "size temp_pointer%d\n", sizeof(temp_pointer));
 
-
-            //
             //if(DEBUG) generateFields(temperatures ,4, 16, 45, 45, 5);
         }
 
@@ -331,8 +294,6 @@ void IRService_vd() {
         fprintf(stderr, "%.1f  ", data_ir[i]);
     }*/
 
-
-
     if(udp_packet) free(udp_packet);
 
     error:
@@ -345,7 +306,6 @@ void IRService_vd() {
     if (ir_matrix) free(ir_matrix);
     if (temperatures) free(temperatures);
 }
-
 
 
 void readEEPROM(int fd, char* bytes) {
@@ -768,7 +728,7 @@ int calculatePixTemp(char* eepromData, MLX90621_CONFIG_REG config, uint16_t cpix
 	if (*Tmax > term_max) {
 	    event_ir1 = 1;
 	    fprintf(stderr, "IR: temperature level has exceeded %d°C: %.1f\n", term_max, *Tmax);
-        if(!DEBUG) generateFields(temperatures ,4, 16, 45, 45, 5);
+        //if(!DEBUG) generateFields(temperatures ,4, 16, 45, 45, 5);
         return 0;
     }
 	return 1;

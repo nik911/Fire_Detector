@@ -16,18 +16,6 @@ void cv_general::cv(General *general)
 {
     std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 90};
 
-    //MJPEGStreamer streamer;
-
-    // By default "/shutdown" is the target to graceful shutdown the streamer
-    // if you want to change the target to graceful shutdown:
-    //      streamer.setShutdownTarget("/stop");
-
-    // By default 1 worker is used for streaming
-    // if you want to use 4 workers:
-    //      streamer.start(8080, 4);
-    //streamer.start(8080);
-
-
     check_of_work();
     cv_detection_moving detectionMoving;
     // вычисление задержки на получение кадров
@@ -47,55 +35,30 @@ void cv_general::cv(General *general)
     auto *media_server_general = new General_media_server;
     thread thread_1(media_server_img, ref(media_server_general));
 
-    int coint_no_frame = 0; /// счётчик пропущенных кадров
+    int coint_no_frame = 0; /// Cчётчик пропущенных кадров
     while(!stop_flag_0)
     {
         int64 start = cv::getTickCount();
         std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
         cam.read(frame);
-        // В черно белом спектре
-        //cvtColor(frame, frame, COLOR_BGR2GRAY);
 
         if (frame.empty()){
             cerr << "ERROR! получен пустой кадр \n"; /// костыль если не получисось связаться переподклюбчемся так как буффер при установке зон был переполнен
             cam.open(settings.URL);
             continue;
         }
-
         rotate(frame, frame, ROTATE_180);
-
 
         media_server_general->media_server_mutex.lock_shared();
         if(!media_server_general->status_data) {
             cv::imencode(".jpg", frame, media_server_general->buff_bgr, params);
-            //media_server_general->buff_bgr = gui.frame_roi.clone();
             media_server_general->status_data = true;
         }
         media_server_general->media_server_mutex.unlock();  ///// была хуйня
 
-
-        // http://localhost:8080/bgr
-      /*  vector<uchar> buff_bgr;
-        imencode(".jpg", frame, buff_bgr, params);
-        streamer.publish("/bgr", std::string(buff_bgr.begin(), buff_bgr.end()));*/
-
         /// запускаем cv обработку
-        detectionMoving.cv_sign_detector_boat(&frame);
-        /// проверка на получение данных
-        /// отправка общих данны
-        /*if (general->data_server_mutex.try_lock()) {
-            if(general->status_data==1){
-                /// запуск парсера данных
-                gui.new_polygon(&frame, general->data_polygon);
-                cout << "kek" << endl;
-                /// до следующего получения данных
-                general->status_data = false;
-            }
-            general->data_server_mutex.unlock();
-        }*/
-        /// продолжаем программу
-        /// захреначим еще поток на сервер
+        detectionMoving.cv_sign_detector(&frame);
 
 
         if(testMode.Test_m)
@@ -125,26 +88,6 @@ void cv_general::cv(General *general)
             }
         }
 
-        /// Рисовалка событий
-
-        /*for (size_t i = 0; i < general_dnn->indices_roi.size(); ++i){
-            int idx = general_dnn->indices_roi[i];
-            Rect box = general_dnn->boxes_roi[idx];
-
-            // box.width = box.x + box.width;
-            // box.height = box.y + box.height;
-
-            // cout<<"Before = " << box.x << " " << box.y << " " << box.width << " " << box.height << endl;
-
-            // scale_coords(frame.size(), oldframe.size(), box);
-            // cout<<"After = " << box.x << " " << box.y << " " << box.width << " " << box.height << endl;
-            putText(gui.frame_roi, "boat", Point(box.x, box.y-10), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
-
-            rectangle(gui.frame_roi, box, Scalar(255, 0, 0), LINE_4);
-            //putText(frame, "boat", Point(box.x, box.y), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
-            //drawPred(classIds[idx], confidences[idx], box.x, box.y, box.width, box.height, oldframe);
-        }*/
-
         //кнопка закрытия
         if (waitKey(10) == 27)
         {
@@ -154,8 +97,6 @@ void cv_general::cv(General *general)
     }
     thread_1.join();
     //streamer.stop();
-    // if (camera_thread.joinable())
-    //    camera_thread.join();
 }
 
 cv_general::~cv_general()
@@ -175,20 +116,6 @@ void cv_general::check_of_work() {
     if(settings.isState)
     {
         cam.open(0);
-        //namedWindow("Frame", WINDOW_KEEPRATIO);///WINDOW_GUI_NORMAL
-        /*std::cout << "Camera:   URL" << endl;
-        if(!cam.open(settings.URL))
-        {
-            namedWindow("Frame", WINDOW_KEEPRATIO);///WINDOW_GUI_NORMAL
-            std::cout << "Camera Error. No data USB" << endl;
-            cam.open(settings.message);
-            cam >> frame;
-            imshow("Frame", frame);
-            // тут нужно вызвать сигнал на отправку ошибки серверу
-            return;
-        }else{
-            cam.open(settings.URL);
-        }*/
     }else {
         std::cout << "Camera:   Camera" << endl;
         if (!cam.open(settings.camIndex)) {
@@ -196,8 +123,6 @@ void cv_general::check_of_work() {
             std::cout << "Camera Error. No data URL" << endl;
             cam.open(settings.message);
             cam >> frame;
-            //imshow("Frame", frame);
-            // тут нужно вызвать сигнал на отправку ошибки серверу
             return;
         } else {
             cam.open(settings.camIndex);
@@ -213,8 +138,6 @@ void cv_general::check_of_work() {
     cout << "Height:    "  << dHeight << endl;
     cout << "FPS:  "       << dFPS    << endl;
     cout << "Install CAM"  << endl;
-
-    //cam.set(CAP_PROP_BUFFERSIZE, 5);   // установка буфера кадров на 10
 }
 
 

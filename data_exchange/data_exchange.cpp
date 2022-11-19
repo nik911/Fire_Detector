@@ -2,7 +2,7 @@
 
 float data_ir[64];
 float data_ir1[64];
-//int event_ir1;
+int event_ir1;
 
 data_exchange::data_exchange()
 {
@@ -34,7 +34,7 @@ void data_exchange::data_packetSend(char *packet)
     curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 50L);
     curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
     curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
-    curl_easy_setopt(hnd, CURLOPT_TCP_KEEPIDLE, 60L);/// Время ожидания 120 сек
+    curl_easy_setopt(hnd, CURLOPT_TCP_KEEPIDLE, 5L);/// Время ожидания 120 сек
     curl_easy_setopt(hnd, CURLOPT_TCP_KEEPINTVL, 30L);/// Проверка активности 60 сек
 
     curl_easy_perform(hnd);
@@ -100,7 +100,7 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame)
 
 
 
-    struct timeval tv;
+    struct timeval tv{};
     struct tm* ptm;
     char time_string[40];
     long milliseconds;
@@ -110,21 +110,23 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame)
     strftime (time_string, sizeof (time_string), "%d.%m.%Y %H:%M:%S", ptm);
 
     /// Это пиздец
-    for(int i=0; i<64; i++) {
-        fprintf(stderr, "%.1f  ", data_ir[i]);
+    for(float i : data_ir) {
+        fprintf(stderr, "%.1f  ", i);
     }
 
     ostringstream ss;
     if(event_ir1 == 0){
-        for(int i = 0; i < 64; i++){
-            ss << data_ir[i] << " ";
+        for(float i : data_ir){
+            ss << i << " ";
         }
     }else if(event_ir1 == 1){
-        for(int i = 0; i < 64; i++){
-            ss << data_ir1[i] << " ";
+        for(float i : data_ir1){
+            ss << i << " ";
         }
     }
     event_ir1 = 0;
+
+
     string data_ir_string(ss.str());
 
     char *data_ir_char = const_cast<char *>(data_ir_string.c_str());
@@ -135,14 +137,12 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame)
         sprintf(data_ir_char[i],"%.1f ", data_ir[i]);
     }*/
 
-
     sprintf(buffer, R"({"Id":%i, "Pass":"%s", "EventType":"%s", "Date":"%s", "Base64":"%s", "data_ir":"%s"})", id, Pass, EventType, time_string, buf_img, data_ir_char);
-    //sprintf(buffer, R"({"Id":%i, "Pass":"%s", "EventType":"%s", "Date":"%s", "Base64":"%s" })", id, Pass, EventType, time_string, buf_img);
-    //sprintf(buffer, R"({"name":"kek1", "object":"kek2", "img":"kek3"})");
+
     cout << buffer << endl;
     data_packetSend(buffer);
 
-    //cout << buffer << endl;
+    cout << buffer << endl;
 }
 
 

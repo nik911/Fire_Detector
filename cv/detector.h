@@ -16,7 +16,6 @@ extern "C" void IRService_vd();
 #include <opencv2/core/ocl.hpp>
 #include <opencv2/core/types_c.h>
 #include <opencv2/imgproc.hpp>
-//#include <opencv2/xfeatures2d.hpp>
 
 #include <iostream>
 #include <thread> // для работы с потоками
@@ -31,7 +30,6 @@ extern "C" void IRService_vd();
 
 #include <opencv2/highgui.hpp>
 #include <opencv2/video/background_segm.hpp>
-//#include <opencv2/bgsegm.hpp> и
 
 #include "data_exchange/data_exchange.h"
 #include "mlx_90621/mlx90621.h"
@@ -89,8 +87,7 @@ public:
 
     cv_detection_moving();                       /// настрока параметров и определение типа объекта
     void ROI_Area(Rect *one, Rect *two);
-    void cv_sign_detector_boat(Mat *frame);      /// детектирование на основе сигнатуры кораблей
-    void cv_point_detector();                    /// на характерных точках
+    void cv_sign_detector(Mat *frame);      /// детектирование на основе сигнатуры кораблей
     ~cv_detection_moving();
 };
 

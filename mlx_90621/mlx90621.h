@@ -79,6 +79,23 @@ extern float data_ir[64];
 extern float data_ir1[64];
 extern int event_ir1;
 
+void readEEPROM(int fd, char* bytes);
+void readConfig(int fd,  uint16_t* reg);
+void readTrimOSC(int fd, char* byte);
+
+void writeConfig(int fd);
+void writeTrimOSC(int fd, char level);
+
+void readPTAT(int fd, uint16_t* ptat);
+void readCPIX(int fd, int16_t* cpix);
+void readIR(int fd, int16_t** ir_matrix, int rows_count, int columns_count);
+
+//calc
+float calculateTA(char* eepromData, MLX90621_CONFIG_REG config, uint16_t ptat);
+int calculatePixTemp(char* eepromData, MLX90621_CONFIG_REG config, uint16_t cpix, float Tambient, int16_t** ir_matrix, float** temperatures, int rows_count, int columns_count, float* Tmin, float* Tmax, int term_max);
+
+void drawbmp(char * filename);
+
 void IRService();
 void IRService_vd();
 
