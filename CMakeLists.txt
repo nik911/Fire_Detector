@@ -13,36 +13,17 @@ find_library(PTHREAD_LIBRARY pthread)
 ##########################################################
 set(OpenCV_DIR /home/pi/opencv/build)
 find_package(OpenCV REQUIRED)
-#if(OpenCV_VERSION VERSION_GREATER 4.5.3)
-#    target_compile_definitions(library PUBLIC USE_LEGACY_TRACKING=1)
-#endif()
-#if(NOT OpenCV_FOUND)
-#    message(SEND_ERROR "Failed to find OpenCV")
-#    return()
-#else()
-#    include_directories(${OpenCV_INCLUDE_DIR})
-#    ocv_include_directories("${OpenCV_SOURCE_DIR}/")
-#    ocv_include_modules_recurse(${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
-#endif()
 ##########################################################
 #set(CURL_ROOT_DIR /home/nikolai/curl-master/include/)
 find_package(CURL REQUIRED)
-#if(NOT CURL_FOUND)
-    #set(CURL_ROOT_DIR /home/nikolai/curl-7.72.0/include/)
-    #set(CURL_ROOT_DIR /home/finder/Desktop/curl-7.72.0/include/)
-    #set(CURL_ROOT_DIR /home/nikolai/Desktop/curl-7.78.0/include/)
- #   set(CURL_ROOT_DIR /home/nikolai/curl-master/include/)
- #   message(SEND_ERROR "Failed to find CURL")
- #   return()
-#else()
-    #include_directories(${CURL_INCLUDE_DIR})
-    #ocv_include_directories("${CURL_SOURCE_DIR}/")
-    #ocv_include_modules_recurse(${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})   прописать пути
-#endif()
 ##########################################################
 set(nadjieb_mjpeg_streamer_DIR /home/pi/cpp-mjpeg-streamer/build)
 find_package(nadjieb_mjpeg_streamer REQUIRED)
-
+##########################################################
+# Вариант с автозагрузкой пакета json
+include(FetchContent)
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.1/json.tar.xz)
+FetchContent_MakeAvailable(json)
 
 # cv
 set(cv_headers cv/cv.h cv/detector.h )
@@ -70,4 +51,5 @@ target_link_libraries(MSD_fire
         ${CURL_LIBRARIES}
         ${LIBS}
         "${LIBRARIES_FROM_REFERENCES}"
-        nadjieb_mjpeg_streamer::nadjieb_mjpeg_streamer)
+        nadjieb_mjpeg_streamer::nadjieb_mjpeg_streamer
+        nlohmann_json::nlohmann_json)

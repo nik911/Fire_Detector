@@ -68,7 +68,7 @@ void data_exchange::data_packetFile(char *packet)
     curl_easy_cleanup(curl);
 }
 
-void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame) {
+void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame, Mat frame_ir) {
     /////////////////////////////////////////////////
     //Перекодировка картинки нового корабля в Base64
     ///////////////////////////////////////////////////
@@ -81,23 +81,17 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame)
     imencode(".jpg",img, buf, quality_params);
     auto *enc_msg = reinterpret_cast<unsigned char*>(buf.data());
     string encoded = base64_encode(enc_msg, buf.size());
-    //cout << encoded << endl;
-
-    //memset(buf,0,sizeof(buf));
-    //sprintf(buf,"/media/nikolai/Новый том/VF_portable/VF_tracking/archive/%s.jpg", buf_name.c_str());
-    ////////////////////////////////////////////////////////
-    //Отправка пакета если новый корабль
-    ////////////////////////////////////////////////////////////
-    char buffer[40000];
     char buf_img[30000];
     strcpy(buf_img, encoded.c_str());
-    memset(buffer,'\0', sizeof(buffer));
-    //sprintf(buffer, R"({"name":"%s", "object":"%s", "img":":%s"})", name, zona, buf_img);
 
-
-    //string data_time = "16.01.2021 9:44:26";
-    //char *time_data = const_cast<char *>(data_time.c_str());
-
+    frame_ir.copyTo(img);
+    quality_params = vector<int>(2);              // Вектор параметров качества сжатия
+    quality_params[0] = 1; // Кодек JPEG
+    quality_params[1] = 20;
+    imencode(".jpg",img, buf, quality_params);
+    encoded = base64_encode(enc_msg, buf.size());
+    char ir_buf_img[30000];
+    strcpy(ir_buf_img, encoded.c_str());
 
 
     struct timeval tv{};
@@ -110,7 +104,7 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame)
     strftime (time_string, sizeof (time_string), "%d.%m.%Y %H:%M:%S", ptm);
 
     /// Это пиздец
-    for(float i : data_ir) {
+    /*for(float i : data_ir) {
         fprintf(stderr, "%.1f  ", i);
     }
 
@@ -124,25 +118,41 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame)
             ss << i << " ";
         }
     }
-    event_ir1 = 0;
+    event_ir1 = 0;*/
 
 
-    string data_ir_string(ss.str());
+    /*string data_ir_string(ss.str());
 
-    char *data_ir_char = const_cast<char *>(data_ir_string.c_str());
+    char *data_ir_char = const_cast<char *>(data_ir_string.c_str());*/
 
-    /*char *data_ir_char[64];
-    for(int i=0; i<64; i++) {
-        //fprintf(stderr, "%.1f  ", data_ir[i]);
-        sprintf(data_ir_char[i],"%.1f ", data_ir[i]);
-    }*/
+    /*sprintf(buffer, R"({"Id":%i,
+                        "Pass":"%s",
+                        "EventType":"%s",
+                        "Date":"%s",
+                        "Base64":"%s",
+                        "data_ir":"%s"})",
+                        id,
+                        Pass,
+                        EventType,
+                        time_string,
+                        buf_img,
+                        data_ir_char);
+    */
 
-    sprintf(buffer, R"({"Id":%i, "Pass":"%s", "EventType":"%s", "Date":"%s", "Base64":"%s", "data_ir":"%s"})", id, Pass, EventType, time_string, buf_img, data_ir_char);
+    std::ostringstream buffer_string;
+    buffer_string << "{ \"Id\": " << id
+                  << ", \"Pass\": \"" << Pass
+                  << "\", \"EventType\": " <<  EventType
+                  << ", \"Date\": \"" << time_string
+                  << "\", \"base64_frame\": \"" << buf_img
+                  << "\", \"base64_ir\": \"" << ir_buf_img
+                  << "}";
 
-    cout << buffer << endl;
-    data_packetSend(buffer);
+    string out_str;
+    out_str = buffer_string.str();
+    cout << out_str << endl;
 
-    cout << buffer << endl;
+    data_packetSend(const_cast<char*>(out_str.c_str()));
 }
 
 
@@ -166,8 +176,6 @@ void data_exchange::data_text() {
     //cout << buffer << endl;
 }
 
-
-/*
 void data_exchange_server::parser_poligon() {
     // convert from JSON: copy each value from the JSON object
     json_polygons::data_polygons dataPolygons{
@@ -208,19 +216,17 @@ void data_exchange_server::parser_poligon() {
     //general->data_server_mutex.unlock();
     if (general->data_server_mutex.try_lock()) {
         //general->data_server_mutex.lock();
-        general->data_polygon = dataPolygons;
+       // general->data_polygon = dataPolygons;
         general->status_data = true;
         general->data_server_mutex.unlock();
     }
 }
-*/
 
-/*
 void data_exchange_server::server() {
     int sockfd, newsockfd;
     socklen_t clilen;
     char buffer[30000];
-    struct sockaddr_in serv_addr, cli_addr;
+    struct sockaddr_in serv_addr{}, cli_addr{};
     int n;
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -238,7 +244,7 @@ void data_exchange_server::server() {
     listen(sockfd, SOMAXCONN);
     clilen = sizeof(cli_addr);
 
-    while(1){
+    while(true){
         newsockfd = accept(sockfd,
                            (struct sockaddr *) &cli_addr,
                                    &clilen);
@@ -273,9 +279,7 @@ void data_exchange_server::server() {
     close(newsockfd);
     close(sockfd);
 }
-*/
-/*
+
 data_exchange_server::~data_exchange_server() {
     cerr << "Data_exchange_server bay!bay!";
-}*/
-
+}

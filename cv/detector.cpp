@@ -347,9 +347,6 @@ void cv_detection_moving::cv_sign_detector(Mat *frame)
             }
         }
 
-
-
-        cout << "kek" << endl;
         IRService();
         if (event_ir1 == 1){
             event = true;
@@ -361,29 +358,40 @@ void cv_detection_moving::cv_sign_detector(Mat *frame)
             cout << "event!!!" << endl;
             int id = 1;
 
-
-            /// Получение данных от температурной маски
-           // IRService_vd();
-
-
-            /*std::time_t t = std::time(NULL);   // get time now
-            std::tm* now = std::localtime(&t);
-            ostringstream oss;
-            int y = (now->tm_year), mo = (now->tm_mon), d = (now->tm_mday), h =(now->tm_hour), m =(now->tm_sec), s = (now->tm_sec);
-            //cout <<  "TIME_" << h << ":" << m << ":" << s << endl;
-            cout <<  "TIME_" << d << ":" << mo << ":" << y << " " << h << ":" << m << ":" << s << endl;
-            oss << d << ":" << mo << ":" << y << " " << h << ":"<< m << ":" << s; ///<< h << ":"<< m << ":" << s ТУТА ВРЕМЯ
-            basic_string<char, char_traits<char>, allocator<char>> buf_time = oss.str();*/
-
             string pas = "12345";
             string event_type = "FR";
 
+            static uint32_t data[64*sizeof(float)];
+            Mat IR_mat (16, 4, CV_32FC1, data);
+            for(int y = 0; y < 4; y++){
+                for(int x = 0; x < 16; x++){
+                    float val = data_ir1[16 * y + x];
+                    IR_mat.at<float>(x,y) = val;
+                }
+            }
+            Mat normal_mat;
+
+            rotate(IR_mat, IR_mat, ROTATE_90_CLOCKWISE);
+            normalize(IR_mat, normal_mat, 0,1.0, NORM_MINMAX, CV_32FC1);
+
+            // Преобразование Mat в CV_U8 для использования applyColorMap
+            double minVal, maxVal;
+            minMaxLoc(normal_mat, &minVal, &maxVal);
+            Mat u8_mat;
+            normal_mat.convertTo(u8_mat, CV_8U, 255.0/(maxVal - minVal), -minVal);
+
+            // Изменить размер изображения
+            Mat size_mat;
+            resize(u8_mat, size_mat, Size(160, 40), INTER_CUBIC);
+
+            // Применение ложного цвета
+            Mat falsecolor_mat;
+            applyColorMap(size_mat, falsecolor_mat, COLORMAP_JET);
 
             char *Pass = const_cast<char *>(pas.c_str());
             char *EventType = const_cast<char *>(event_type.c_str());
-            //char *data_time = const_cast<char *>(buf_time.c_str());
-            //char *Data = const_cast<char *>(it1->name_detection_zone.c_str());
-            exchange.data_imgSend(id, Pass, EventType, frameOut);
+
+            exchange.data_imgSend(id, Pass, EventType, frameOut, falsecolor_mat);
             //imshow("Event", frameOut);
         }
 

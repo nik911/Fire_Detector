@@ -94,7 +94,7 @@ void IRService() {
 
             Tambient = calculateTA(EEPROM_bytes, EEPROM_config, ptat);
 
-            int term_max = 60;
+            int term_max = 40;
             loop = calculatePixTemp(EEPROM_bytes, EEPROM_config, cpix, Tambient, ir_matrix, temperatures, rows_count, columns_count, &Tmin, &Tmax, term_max);
         }
     }
@@ -102,6 +102,8 @@ void IRService() {
 
     uint32_t  	ir_data_length;
     uint8_t*	ir_data;
+
+    /// Формируем картинку
 
     float* temp_ir_packet_pointer = ir_packet;
     int k = 0;
@@ -111,12 +113,21 @@ void IRService() {
             k++;
         }
     }
-    /// Преобразование картинки
 
+
+    /*Mat IR_mat (16, 4, CV_32FC1, data);
+
+    for(int y = 0; y < 4; y++){
+        for(int x = 0; x < 16; x++){
+            float* val = temperatures[y][x];
+            IR_mat.at<float>(x,y) = val;
+        }
+    }*/
+
+
+    /// Преобразование картинки
     ir_data_length = sizeof(float)*rows_count*columns_count;
     ir_data = (unsigned char*)ir_packet;
-
-    printf("%s", ir_data);
 
     uint32_t packet_size = 0;
     packet_size += sizeof(ir_data_length);
@@ -131,12 +142,12 @@ void IRService() {
     memcpy (temp_pointer, ir_data, ir_data_length);
     for(int i=0; i<64; i++) {
         //fprintf(stderr, "%.1f  ", (((float*)(uint32_t)temp_pointer))[i] );
-        //data_ir1[i] = (((float*)(uint32_t)temp_pointer))[i];
+        //data_ir1[i] = (((float*)temp_pointer))[i];
         data_ir1[i] = ((float*)temp_ir_packet_pointer)[i];
     }
 
     /*for(int i=0; i<64; i++) {
-        fprintf(stderr, "%.1f  ", data_ir[i]);
+        fprintf(stderr, "%.1f  ", data_ir1[i]);
     }*/
 
     if(udp_packet) free(udp_packet);
@@ -151,162 +162,6 @@ void IRService() {
     if (ir_matrix) free(ir_matrix);
     if (temperatures) free(temperatures);
 }
-
-void IRService_vd() {
-
-    char EEPROM_bytes[256] = {0x00};
-    MLX90621_CONFIG_REG EEPROM_config;
-    char EEPROM_trim;
-    uint16_t ptat = 0x0000;
-    uint16_t cpix = 0x0000;
-
-    int rows_count = 4;
-    int columns_count = 16;
-    int rows_counter = 0;
-
-    int16_t **ir_matrix = NULL;
-    int16_t **temp = (int16_t**) malloc(sizeof(int16_t*) * rows_count);
-    if (temp == NULL) {
-        if (DEBUG) fprintf(stderr, "Cannot allocate more memory.\n");
-        goto error;
-    } else {
-        ir_matrix = temp;
-    }
-    while (rows_counter != rows_count) {
-        int16_t *temp = (int16_t*) calloc(columns_count, sizeof(int16_t));
-        if (temp == NULL) {
-            if (DEBUG) fprintf(stderr, "Cannot allocate more memory.\n");
-            goto error;
-        } else {
-            ir_matrix[rows_counter] = temp;
-        }
-        rows_counter++;
-    }
-    rows_counter = 0;
-    float **temperatures = NULL;
-    float **t_temp = (float**) malloc(sizeof(float*) * rows_count);
-    if (t_temp == NULL) {
-        if (DEBUG) fprintf(stderr, "Cannot allocate more memory.\n");
-        goto error;
-    } else {
-        temperatures = t_temp;
-    }
-    while (rows_counter != rows_count) {
-        float *t_temp = (float*) calloc(columns_count, sizeof(float));
-        if (t_temp == NULL) {
-            if (DEBUG) fprintf(stderr, "Cannot allocate more memory.\n");
-            goto error;
-        } else {
-            temperatures[rows_counter] = t_temp;
-        }
-        rows_counter++;
-    }
-
-    float* ir_packet = (float*) malloc(sizeof(float)*rows_count*columns_count);
-    if (ir_packet == NULL) {
-        if (DEBUG) fprintf(stderr, "Cannot allocate more memory.\n");
-        goto error;
-    }
-
-    float Tmin = 0.0;
-    float Tmax = 0.0;
-
-    int fd;
-    char *filename = "/dev/i2c-1";
-    if ((fd = open(filename, O_RDWR)) < 0) {
-        /* ERROR HANDLING: you can check errno to see what went wrong */
-        if (DEBUG) fprintf(stderr, "Failed to open the i2c bus");
-        goto error;
-    }
-    usleep(5000);
-    readEEPROM(fd, EEPROM_bytes);
-
-    writeTrimOSC(fd, EEPROM_bytes[OSC_TRIM_VALUE]);
-    readTrimOSC(fd, &EEPROM_trim);
-
-    writeConfig(fd);
-
-    int loop = 5;
-    generateBMP();
-    generateGradient();
-
-    while (loop) {
-        readConfig(fd, &EEPROM_config.VALUE);
-        if (EEPROM_config.POR_MD == 0) {
-            if (DEBUG) fprintf(stderr, "POR\n");
-            break;
-        }
-        if (EEPROM_config.IR_FLAG_RUN) {
-            if (DEBUG) fprintf(stderr, "IR_FLAG_RUN\n");
-            readPTAT(fd, &ptat);
-            readCPIX(fd, &cpix);
-            readIR(fd, ir_matrix, rows_count, columns_count);
-
-            float Tambient = 0.0;
-
-            Tambient = calculateTA(EEPROM_bytes, EEPROM_config, ptat);
-            //if (DEBUG) fprintf (stderr, "Ambient temperature: %.1f\n", Tambient);
-
-            int term_max = 10;
-            loop = calculatePixTemp(EEPROM_bytes, EEPROM_config, cpix, Tambient, ir_matrix, temperatures, rows_count, columns_count, &Tmin, &Tmax, term_max);
-
-            //fprintf(stderr, "size temp_pointer%d\n", sizeof(temp_pointer));
-
-            //if(DEBUG) generateFields(temperatures ,4, 16, 45, 45, 5);
-        }
-
-        usleep(50000);
-    }
-
-    uint32_t  	ir_data_length;
-    uint8_t*	ir_data;
-
-    float* temp_ir_packet_pointer = ir_packet;
-    int k = 0;
-    for(int i=0; i<rows_count; i++) {
-        for(int j=0; j<columns_count; j++) {
-            *((temp_ir_packet_pointer)+k) = temperatures[i][j];
-            k++;
-        }
-    }
-
-    ir_data_length = sizeof(float)*rows_count*columns_count;
-    ir_data = (unsigned char*)ir_packet;
-
-    int packet_size = 0;
-    packet_size += sizeof(ir_data_length);
-    packet_size += ir_data_length;
-
-    // alloc
-    unsigned char* udp_packet = (unsigned char*) calloc(packet_size, sizeof(unsigned char));
-    // fill
-    int length = 0;
-    unsigned char* temp_pointer = udp_packet;
-
-    ///float data_ir[64];
-    memcpy (temp_pointer, ir_data, ir_data_length);
-    for(int i=0; i<64; i++) {
-        //fprintf(stderr, "%.1f  ", (((float*)(uint32_t)temp_pointer))[i] );
-        data_ir[i] = (((float*)(uint32_t)temp_pointer))[i];
-    }
-
-   /* for(int i=0; i<64; i++) {
-        fprintf(stderr, "%.1f  ", data_ir[i]);
-    }*/
-
-    if(udp_packet) free(udp_packet);
-
-    error:
-    close(fd);
-    rows_counter = rows_count;
-    while (rows_counter--) {
-        if(ir_matrix[rows_counter]) free(ir_matrix[rows_counter]);
-        if(temperatures[rows_counter]) free(temperatures[rows_counter]);
-    }
-    if (ir_matrix) free(ir_matrix);
-    if (temperatures) free(temperatures);
-}
-
 
 void readEEPROM(int fd, char* bytes) {
  //	char* err;
@@ -718,8 +573,6 @@ int calculatePixTemp(char* eepromData, MLX90621_CONFIG_REG config, uint16_t cpix
 			if (temperatures[i][j] > *Tmax) *Tmax = temperatures[i][j];
 			index++;
 			if (DEBUG) fprintf(stderr, "%.1f ",temperatures[i][j]);
-
-
 		}
 		if (DEBUG) fprintf(stderr, "\n");
 	}

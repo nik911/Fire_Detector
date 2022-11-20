@@ -16,10 +16,19 @@
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <stddef.h>
-
 #include <math.h>
 
+/*#include <opencv2/core.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/dnn.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/core/ocl.hpp>
+#include <opencv2/core/types_c.h>
+#include <opencv2/imgproc.hpp>*/
+
 #include "mlx90621.h"
+
 
 #include "bmp.h"
 
@@ -75,7 +84,7 @@ typedef union {
 
 #define T_MAX_LEVEL			150
 
-extern float data_ir[64];
+//extern float data_ir[64];
 extern float data_ir1[64];
 extern int event_ir1;
 
@@ -97,7 +106,6 @@ int calculatePixTemp(char* eepromData, MLX90621_CONFIG_REG config, uint16_t cpix
 void drawbmp(char * filename);
 
 void IRService();
-void IRService_vd();
 
 
 #endif /* MLX90621_H */
