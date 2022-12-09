@@ -363,9 +363,22 @@ void cv_detection_moving::cv_sign_detector(Mat *frame)
 
             static uint32_t data[64*sizeof(float)];
             Mat IR_mat (16, 4, CV_32FC1, data);
+
+            int temp_max = 0, temp_min = 0, probabilit = 50;
+
             for(int y = 0; y < 4; y++){
                 for(int x = 0; x < 16; x++){
                     float val = data_ir1[16 * y + x];
+                    if (y == 0 && x == 0){
+                        temp_min = val;
+                    }
+                    if (val > temp_max){
+                        temp_max = val;
+                    }
+                    if (val < temp_min){
+                        temp_min = val;
+                    }
+
                     IR_mat.at<float>(x,y) = val;
                 }
             }
@@ -391,7 +404,7 @@ void cv_detection_moving::cv_sign_detector(Mat *frame)
             char *Pass = const_cast<char *>(pas.c_str());
             char *EventType = const_cast<char *>(event_type.c_str());
 
-            exchange.data_imgSend(id, Pass, EventType, frameOut, falsecolor_mat);
+            exchange.data_imgSend(id, Pass, EventType, frameOut, falsecolor_mat, temp_max,  temp_min, probabilit);
             //imshow("Event", frameOut);
         }
 

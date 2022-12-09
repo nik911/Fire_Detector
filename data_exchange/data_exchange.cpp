@@ -68,7 +68,7 @@ void data_exchange::data_packetFile(char *packet)
     curl_easy_cleanup(curl);
 }
 
-void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame, Mat frame_ir) {
+void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame, Mat frame_ir, int temp_max, int temp_min, int probability) {
     /////////////////////////////////////////////////
     //Перекодировка картинки нового корабля в Base64
     ///////////////////////////////////////////////////
@@ -103,50 +103,19 @@ void data_exchange::data_imgSend(int id, char *Pass, char *EventType, Mat frame,
     ptm = localtime (&tv.tv_sec);
     strftime (time_string, sizeof (time_string), "%d.%m.%Y %H:%M:%S", ptm);
 
-    /// Это пиздец
-    /*for(float i : data_ir) {
-        fprintf(stderr, "%.1f  ", i);
-    }
-
-    ostringstream ss;
-    if(event_ir1 == 0){
-        for(float i : data_ir){
-            ss << i << " ";
-        }
-    }else if(event_ir1 == 1){
-        for(float i : data_ir1){
-            ss << i << " ";
-        }
-    }
-    event_ir1 = 0;*/
-
-
-    /*string data_ir_string(ss.str());
-
-    char *data_ir_char = const_cast<char *>(data_ir_string.c_str());*/
-
-    /*sprintf(buffer, R"({"Id":%i,
-                        "Pass":"%s",
-                        "EventType":"%s",
-                        "Date":"%s",
-                        "Base64":"%s",
-                        "data_ir":"%s"})",
-                        id,
-                        Pass,
-                        EventType,
-                        time_string,
-                        buf_img,
-                        data_ir_char);
-    */
 
     std::ostringstream buffer_string;
-    buffer_string << "{ \"Id\": " << id
-                  << ", \"Pass\": \"" << Pass
-                  << "\", \"EventType\": " <<  EventType
-                  << ", \"Date\": \"" << time_string
+    buffer_string << "{ \"id\": " << id
+                  << ", \"id_psw\": \"" << Pass
+                  << "\", \"event_type\": \"" <<  EventType
+                  << "\", \"date_time\": \"" << time_string
                   << "\", \"base64_frame\": \"" << buf_img
                   << "\", \"base64_ir\": \"" << ir_buf_img
+                  << "\", \"temp_max\": " << temp_max
+                  << ", \"temp_min\": " << temp_min
+                  << ", \"probability\": " << probability
                   << "}";
+
 
     string out_str;
     out_str = buffer_string.str();

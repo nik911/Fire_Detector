@@ -77,13 +77,13 @@ struct General
 
 class data_exchange{
 private:
-    char URL_event[100] = "http://192.168.88.254:90/DataRecipient/GetStringDate";      /// информация по судну
-    char URL_massege[100] = "http://192.168.250.225:8000/";
+    char URL_event[100] = "http://192.168.2.26:4444/events";      /// информация по судну
+    char URL_massege[100] = "http://192.168.2.26:4444/events";
 public:
     data_exchange();
     void data_packetSend(char *packet);
     void data_packetFile(char *packet);
-    void data_imgSend(int id, char *Pass, char *EventType, Mat frame, Mat frame_ir);
+    void data_imgSend(int id, char *Pass, char *EventType, Mat frame, Mat frame_ir, int temp_max, int temp_min, int probability);
     void data_textSend(char *packet);
     void data_text();
     ~data_exchange();
