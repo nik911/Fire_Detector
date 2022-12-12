@@ -55,7 +55,7 @@ void cv_general::cv(General *general)
             cv::imencode(".jpg", frame, media_server_general->buff_bgr, params);
             media_server_general->status_data = true;
         }
-        media_server_general->media_server_mutex.unlock();  ///// была хуйня
+        media_server_general->media_server_mutex.unlock();
 
         /// запускаем cv обработку
         detectionMoving.cv_sign_detector(&frame);

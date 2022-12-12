@@ -46,27 +46,6 @@ using namespace cv;
 using namespace nlohmann;
 
 
-namespace json_polygons{
-    struct point_polygon{
-        int id;
-        double x;
-        double y;
-    };
-    struct point_polygons{
-        int id;
-        list<json> points;
-        vector<point_polygon> point;
-    };
-    // главный список внутри него все
-    struct data_polygons{
-        int portId;
-        int cameraId;
-        list<json> polygons;
-        vector<point_polygons> polygons_obj;
-    };
-}
-
-
 struct General
         {
     bool status_data = false;

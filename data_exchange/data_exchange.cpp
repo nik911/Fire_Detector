@@ -146,49 +146,7 @@ void data_exchange::data_text() {
 }
 
 void data_exchange_server::parser_poligon() {
-    // convert from JSON: copy each value from the JSON object
-    json_polygons::data_polygons dataPolygons{
-        j["portId"].get<int>(),
-        j["cameraId"].get<int>(),
-        j["polygons"].get<list<json>>()
-    };
-
-    for (json it1: dataPolygons.polygons) {
-        cout << it1 << endl;
-        json_polygons::point_polygons polyg{
-            it1["id"].get<int>(),
-            it1["points"].get<list<json>>()
-        };
-
-        for (json it2: polyg.points) {
-            cout << it2 << endl;
-            json_polygons::point_polygon p2{
-                it2["id"].get<int>(),
-                it2["x"].get<double>(),
-                it2["y"].get<double>()
-            };
-            polyg.point.push_back(p2);
-        }
-        dataPolygons.polygons_obj.push_back(polyg);
-    }
-    /// присваиваем сформированную структуру
-    //if (general->data_server_mutex.try_lock()) {
-
-    // test data parser
-    cout << "Первый уровень вложения порт:   " << dataPolygons.portId << endl;
-    cout << "Первый уровень вложения камера: " << dataPolygons.cameraId << endl;
-    cout << "копнем глубже:   " << dataPolygons.polygons_obj[0].id << endl;
-    // копнем глубже
-    cout << "копнем глубже:   " << dataPolygons.polygons_obj[0].point[0].x << endl;
-
-    //}
-    //general->data_server_mutex.unlock();
-    if (general->data_server_mutex.try_lock()) {
-        //general->data_server_mutex.lock();
-       // general->data_polygon = dataPolygons;
-        general->status_data = true;
-        general->data_server_mutex.unlock();
-    }
+    // Отправка команды на поворот установки
 }
 
 void data_exchange_server::server() {

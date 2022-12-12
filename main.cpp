@@ -21,7 +21,6 @@ void data_server(General *general){
 }
 
 void general_cv(General *general){
-    /// добавить жеткий перезапуск при получении данных
     cv_general cv_general(general);
 }
 
