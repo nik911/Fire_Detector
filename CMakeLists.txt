@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
-project(MSD_fire)
+project(Fire_Detector)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 17)
-# Set the output folder where your program will be created
+# Установите выходную папку, в которой будет создана ваша программа
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
@@ -39,11 +39,11 @@ set(mlx_90621_sources mlx_90621/mlx90621.c mlx_90621/bmp.c)
 set(project_headers ${cv_headers} ${data_exchange_headers}  ${mlx_90621_headers})
 set(project_sources main.cpp ${cv_sources} ${data_exchange_sources} ${mlx_90621_sources})
 
-add_executable(MSD_fire main.cpp ${project_sources} ${project_headers})
+add_executable(Fire_Detector main.cpp ${project_sources} ${project_headers})
 
-target_include_directories(MSD_fire PUBLIC ${PROJECT_INCLUDE_DIRS} ${CURL_INCLUDE_DIR})
+target_include_directories(Fire_Detector PUBLIC ${PROJECT_INCLUDE_DIRS} ${CURL_INCLUDE_DIR})
 
-target_link_libraries(MSD_fire
+target_link_libraries(Fire_Detector
         ${TARGET_NAME}
         ${CODE_LIB_FILES}
         ${PTHREAD_LIBRARY}

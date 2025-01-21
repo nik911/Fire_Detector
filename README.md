@@ -53,7 +53,13 @@ cmake .. && make
 sudo make install
 ```
 
-### Подготовка скрипта запуска
+### Запуск проекта
+```
+cd bin
+./Fire_Detector
+```
+
+### Подготовка VNC для удобной работы
 ```
 https://pcminipro.ru/nastrojka-serverov/ustanovka-i-nastrojka-vnc-servera-tightvncserver-dlya-udalennogo-upravleniya-sistemoj-s-ispolzovaniem-graficheskoj-sredy/
 ```
