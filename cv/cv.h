@@ -13,9 +13,7 @@
 #include <opencv2/core/ocl.hpp>
 #include <opencv2/core/types_c.h>
 #include <opencv2/imgproc.hpp>
-//#include <opencv2/xfeatures2d.hpp>
 #include <opencv2/video/background_segm.hpp>
-//#include <opencv2/bgsegm.hpp>
 
 
 #include "detector.h"

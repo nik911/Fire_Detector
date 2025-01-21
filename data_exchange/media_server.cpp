@@ -6,12 +6,9 @@
 
 void media_server::server(General_media_server *media_server_general){
 
-        ///  Стриминговый сервис
+    ///  Стриминговый сервис
     //std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 90};
     MJPEGStreamer streamer;
-    // По умолчанию "/ shutdown" является целью постепенного отключения стримера
-    // если вы хотите изменить цель на плавное завершение работы:
-    // streamer.setShutdownTarget ("/ stop");
 
     // По умолчанию для потоковой передачи используется 1 воркер
     // если вы хотите использовать 4 воркера:
@@ -45,10 +42,6 @@ void media_server::server(General_media_server *media_server_general){
         if(status_media){
             /// Отправка кадров на импровезированный медиа сервер Http jmeg
             /// http://localhost:8080/bgr
-            /*if(!frame_server.empty()){
-                cv::imencode(".jpg", frame_server, buff_bgr, params);
-                //status_media = false;
-            }*/
             streamer.publish("/bgr", std::string(buff_bgr.begin(), buff_bgr.end()));
             status_media = false;
         }else{

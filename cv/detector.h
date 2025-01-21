@@ -1,35 +1,20 @@
-//
-// Created by Nik Babuhin on 13.09.2021.
-//
-
 #ifndef MSD_FIRE_DETECTOR_H
 #define MSD_FIRE_DETECTOR_H
-
-extern "C" void IRService();
-extern "C" void IRService_vd();
 
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/dnn.hpp>
-#include <opencv2/core.hpp>
-#include <opencv2/core/ocl.hpp>
-#include <opencv2/core/types_c.h>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/video/background_segm.hpp>
 
 #include <iostream>
-#include <thread> // для работы с потоками
+#include <thread>
 #include <mutex>
-#include <shared_mutex> // многопользовательские мутексы
+#include <shared_mutex>
 #include <future>
-
-#include <opencv2/dnn.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-
-
-#include <opencv2/highgui.hpp>
-#include <opencv2/video/background_segm.hpp>
+#include <vector>
+#include <numeric> // для std::accumulate
 
 #include "data_exchange/data_exchange.h"
 #include "mlx_90621/mlx90621.h"
@@ -37,59 +22,70 @@ extern "C" void IRService_vd();
 using namespace cv;
 using namespace std;
 
-
-class fire_object{
+// Класс для хранения информации об объекте
+class FireObject {
 public:
-    unsigned int counter=0;         /// существование объекта
-    unsigned int counter_time=0;    /// на удаление
-    bool traking = false;
-    Mat frame_object;
-    Rect rect_FireData;
-    vector<double> area;
-    vector<double> centerX;
-    vector<double> centerY;
+    unsigned int counter = 0;         // Счетчик существования объекта
+    unsigned int counter_time = 0;    // Счетчик для удаления
+    bool tracking = false;            // Флаг отслеживания
+    Mat frame_object;                 // Кадр с объектом
+    Rect rect_FireData;               // Прямоугольник, описывающий объект
+    vector<double> area;              // Площади объекта
+    vector<double> centerX;           // Координаты X центра объекта
+    vector<double> centerY;           // Координаты Y центра объекта
 };
 
-
-/// Общие настроки детектора движения на основе сигнатур
-class settings_detector_sign
-{
+// Настройки детектора
+class SettingsDetector {
 public:
-    int type_subtractor = 0;
-    double min_area = 1500;                 /// установкака порога площади под контуром
-    double max_area = 10000000;               /// установкака порога площади под контуром
-    bool Test_mode = true;
-    int time_ms = 0;                        /// sleep
+    int type_subtractor = 0;          // Тип субтрактора фона
+    double min_area = 1500;           // Минимальная площадь контура
+    double max_area = 10000000;       // Максимальная площадь контура
+    bool test_mode = true;            // Режим тестирования
+    int time_ms = 0;                  // Время задержки
 };
 
-
-/// класс детектирования подвижных объектов
-class cv_detection_moving {
+// Класс для детектирования подвижных объектов
+class FireDetector {
 private:
-    //ROI Area
-    double Area1=0, Area2=0, Area3=0;
+    // ROI Area
+    double Area1 = 0, Area2 = 0, Area3 = 0;
     Rect three;
     double centerX = 0, centerY = 0;
-    data_exchange exchange;
+    DataExchange exchange;
     Mat frame_out, boat_img;
-    /// параметры и настройка
-    bool State_img = true;
-    Mat frame_in, fgMask, fgMask_ar;        /// пространство изображений ----
-    settings_detector_sign  settings_sign;  /// параметры системы детектирования
-    Ptr<BackgroundSubtractor> pBackSub;     /// пространство для детектируемых сигнатур
-public:
-    vector<fire_object> tracking_fire;         /// вектор объектов c огнем
-    /// параметры для синхронизации
-    vector<vector<Point>> contours_prev, contours_curr; /// вектора контуров найденые и отсеиные по полезности
-    int count_contour = 0;                              /// счётчик текущих контуров
-    int count_largest_contour = 0;
-    vector<int> contours_detects;                       /// индексы соответсвующих контов
 
-    cv_detection_moving();                       /// настрока параметров и определение типа объекта
+    // Параметры и настройки
+    bool state_img = true;
+    Mat frame_in, fgMask, fgMask_ar;
+    SettingsDetector settings;
+    Ptr<BackgroundSubtractor> pBackSub;
+
+    // Вспомогательные функции
+    void processFrame(Mat &frame);
+    void trackObjects(Mat &frameOut);
+    void addNewFireObject(Mat &frameOut, Rect &bounding_rect, int centerX, int centerY);
+    void trackExistingFireObjects(Mat &frameOut, Rect &bounding_rect, int centerX, int centerY, vector<int> &new_object, vector<int> &index_contours);
+    void handleNewObjects(Mat &frameOut, vector<int> &new_object, vector<int> &index_contours);
+    void removeInactiveObjects();
+    void drawAndSendEvents(Mat &frameOut);
+    void handleEvent(Mat &frameOut);
+
+public:
+    vector<FireObject> tracking_fire; // Вектор объектов с огнем
+    vector<vector<Point>> contours_prev, contours_curr; // Вектора контуров
+    int count_contour = 0;            // Счетчик текущих контуров
+    int count_largest_contour = 0;
+    vector<int> contours_detects;     // Индексы соответствующих контуров
+
+    FireDetector();                   // Конструктор
     void ROI_Area(Rect *one, Rect *two);
-    void cv_sign_detector(Mat *frame);      /// детектирование на основе сигнатуры кораблей
-    ~cv_detection_moving();
+    void detectFire(Mat *frame);      // Основная функция детектирования
+    ~FireDetector();                  // Деструктор
 };
 
+// Внешние функции
+extern "C" void IRService();
+extern "C" void IRService_vd();
 
-#endif // DETECTION_H
+#endif // MSD_FIRE_DETECTOR_H

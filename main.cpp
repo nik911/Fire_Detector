@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 {
     auto *general = new General;
 
-   // thread thread_1(data_server, ref(general));
+    // thread thread_1(data_server, ref(general)); // Для настроек
     thread thread_2(general_cv, ref(general));
 
    // thread_1.join();
